@@ -21,11 +21,11 @@ export const app = new Elysia();
 app.onStart(({ server }) => {
   const ip = getLocalIP();
   const port = server?.port ?? 3000;
-  console.log("==============================================");
+  console.log("====================================================================");
   console.log(`  Servidor corriendo`);
   console.log(`  Red:     ${ip}:${port}  <-- IP/puerto para poner en tu dispositivo`);
   console.log(`  Sala:    0 / ${MAX_JUGADORES} jugadores`);
-  console.log("==============================================");
+  console.log("====================================================================");
 });
 
 app.ws("/ws", {
