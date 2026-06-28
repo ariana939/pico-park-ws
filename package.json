@@ -1,0 +1,17 @@
+{
+    "name": "pico-park-servidor",
+    "version": "1.0.0",
+    "description": "Servidor WebSocket + motor físico para Pico Park",
+    "scripts": {
+      "dev": "bun run --watch servidor/index.ts",
+      "start": "bun run servidor/index.ts"
+    },
+    "dependencies": {
+      "elysia": "latest",
+      "matter-js": "^0.19.0"
+    },
+    "devDependencies": {
+      "@types/matter-js": "^0.19.0",
+      "bun-types": "latest"
+    }
+  }
