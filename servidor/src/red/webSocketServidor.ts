@@ -71,6 +71,22 @@ export class WebSocketServidor {
       })
     );
 
+    // Archivos CSS
+    this.app.get("/estilos/*", ({ request }) => {
+        const url = new URL(request.url);
+        return new Response(
+        Bun.file(`./host-juego${url.pathname}`)
+        );
+    });
+    
+    // Archivos JavaScript
+    this.app.get("/js/*", ({ request }) => {
+        const url = new URL(request.url);
+        return new Response(
+        Bun.file(`./host-juego${url.pathname}`)
+        );
+    });
+
     // IP para el QR del frontend
     this.app.get("/ip", () => {
       const ip = this.getLocalIP();

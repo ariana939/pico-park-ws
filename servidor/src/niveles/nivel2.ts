@@ -37,7 +37,7 @@ export class Nivel2 extends NivelBase {
     this.puerta = new Puerta(this.world, PUERTA_X, PUERTA_Y);
   }
 
-  protected tickEspecifico(): void {
+  protected tickEspecifico(): void { 
     this.caja.aplicarFuerzaDeJugadores([...this.jugadores.values()]);
   }
 

@@ -21,7 +21,9 @@ export abstract class NivelBase {
     this.broadcast = broadcast;
     this.engine    = crearEngine();
     this.world     = this.engine.world;
+  }
 
+  public inicializar(): void {
     this.configurarMundo();
     this.registrarColisiones();
   }
