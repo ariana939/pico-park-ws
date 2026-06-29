@@ -1,0 +1,398 @@
+:root {
+    --bg:        #0f0e17;
+    --panel:     #1a1830;
+    --accent:    #7c6af7;
+    --accent2:   #f7c948;
+    --text:      #fffffe;
+    --muted:     #a7a9be;
+    --danger:    #ef4444;
+    --success:   #22c55e;
+    --border:    rgba(124, 106, 247, 0.2);
+  }
+  
+  *, *::before, *::after {
+    margin:     0;
+    padding:    0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    background: var(--bg);
+    color:      var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    height:     100vh;
+    overflow:   hidden;
+  }
+
+  .pantalla {
+    display:    none;
+    width:      100vw;
+    height:     100vh;
+  }
+  
+  .pantalla.activa {
+    display: flex;
+  }
+  
+  .logo {
+    text-align: center;
+  }
+  
+  .logo h1 {
+    font-size:      28px;
+    font-weight:    800;
+    letter-spacing: 3px;
+    color:          var(--accent);
+    text-transform: uppercase;
+  }
+  
+  .logo span {
+    font-size:      12px;
+    color:          var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .btn-iniciar {
+    padding:          14px 48px;
+    border-radius:    25px;
+    border:           none;
+    background:       var(--accent);
+    color:            var(--text);
+    font-size:        16px;
+    font-weight:      700;
+    letter-spacing:   1px;
+    cursor:           pointer;
+    transition:       opacity 0.2s, transform 0.1s, box-shadow 0.2s;
+    box-shadow:       0 6px 20px rgba(124, 106, 247, 0.4);
+  }
+  
+  .btn-iniciar:hover:not(:disabled) {
+    transform:   translateY(-2px);
+    box-shadow:  0 10px 28px rgba(124, 106, 247, 0.5);
+  }
+  
+  .btn-iniciar:active:not(:disabled) {
+    transform: translateY(0);
+  }
+  
+  .btn-iniciar:disabled {
+    opacity: 0.35;
+    cursor:  not-allowed;
+    box-shadow: none;
+  }
+  
+  #pantalla-espera {
+    align-items:     center;
+    justify-content: center;
+  }
+  
+  .espera-contenido {
+    display:         flex;
+    flex-direction:  column;
+    align-items:     center;
+    gap:             32px;
+    width:           100%;
+    max-width:       520px;
+    padding:         40px;
+  }
+  
+  .ip-section {
+    text-align: center;
+  }
+  
+  .ip-label {
+    font-size:     13px;
+    color:         var(--muted);
+    margin-bottom: 10px;
+    letter-spacing: 0.5px;
+  }
+  
+  .ip-valor {
+    font-family:    monospace;
+    font-size:      26px;
+    font-weight:    700;
+    color:          var(--accent2);
+    background:     rgba(247, 201, 72, 0.1);
+    border:         1px solid rgba(247, 201, 72, 0.3);
+    padding:        12px 28px;
+    border-radius:  12px;
+    letter-spacing: 2px;
+  }
+
+  .jugadores-grid {
+    display:               grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap:                   12px;
+    width:                 100%;
+  }
+  
+  .slot {
+    display:      flex;
+    align-items:  center;
+    gap:          12px;
+    padding:      14px 18px;
+    border-radius: 10px;
+    background:   rgba(255, 255, 255, 0.04);
+    border:       1px solid rgba(255, 255, 255, 0.07);
+    transition:   border-color 0.3s, background 0.3s;
+  }
+  
+  .slot.conectado {
+    border-color: rgba(34, 197, 94, 0.4);
+    background:   rgba(34, 197, 94, 0.05);
+  }
+  
+  .slot-dot {
+    width:         14px;
+    height:        14px;
+    border-radius: 50%;
+    background:    #333;
+    flex-shrink:   0;
+    transition:    background 0.3s;
+  }
+  
+  .slot-nombre {
+    font-size:   14px;
+    font-weight: 600;
+    color:       var(--muted);
+    transition:  color 0.3s;
+  }
+  
+  .slot.conectado .slot-nombre {
+    color: var(--text);
+  }
+  
+  .espera-mensaje {
+    font-size:  14px;
+    color:      var(--muted);
+    text-align: center;
+  }
+  
+  .espera-mensaje strong {
+    color: var(--accent2);
+  }
+
+  #pantalla-lobby {
+    align-items:     center;
+    justify-content: center;
+  }
+  
+  .lobby-contenido {
+    display:        flex;
+    flex-direction: column;
+    align-items:    center;
+    gap:            48px;
+  }
+  
+  .niveles-grid {
+    display: flex;
+    gap:     32px;
+  }
+  
+  .nivel-card {
+    width:          200px;
+    height:         200px;
+    border-radius:  16px;
+    background:     var(--panel);
+    border:         2px solid var(--border);
+    display:        flex;
+    align-items:    center;
+    justify-content: center;
+    cursor:         pointer;
+    transition:     border-color 0.2s, transform 0.2s, box-shadow 0.2s, background 0.2s;
+  }
+  
+  .nivel-card:hover {
+    border-color: var(--accent);
+    background:   rgba(124, 106, 247, 0.1);
+    transform:    translateY(-4px);
+    box-shadow:   0 12px 32px rgba(124, 106, 247, 0.25);
+  }
+  
+  .nivel-card:active {
+    transform: translateY(-1px);
+  }
+  
+  .nivel-numero {
+    font-size:      22px;
+    font-weight:    800;
+    color:          var(--text);
+    letter-spacing: 1px;
+  }
+  
+  #pantalla-juego {
+    flex-direction: row;
+  }
+  
+  #sidebar {
+    width:           260px;
+    min-width:       260px;
+    background:      var(--panel);
+    display:         flex;
+    flex-direction:  column;
+    gap:             20px;
+    padding:         24px 16px;
+    border-right:    1px solid var(--border);
+    overflow-y:      auto;
+  }
+  
+  #ws-status {
+    display:      flex;
+    align-items:  center;
+    gap:          8px;
+    font-size:    12px;
+    color:        var(--muted);
+    padding:      8px 12px;
+    border-radius: 8px;
+    background:   rgba(255, 255, 255, 0.03);
+  }
+  
+  #ws-dot {
+    width:         8px;
+    height:        8px;
+    border-radius: 50%;
+    background:    var(--danger);
+    transition:    background 0.3s;
+  }
+  
+  #ws-dot.conectado {
+    background: var(--success);
+    box-shadow: 0 0 6px var(--success);
+  }
+  
+  /* Sección jugadores */
+  #players-section h3 {
+    font-size:      11px;
+    letter-spacing: 1px;
+    color:          var(--muted);
+    text-transform: uppercase;
+    margin-bottom:  10px;
+  }
+  
+  #player-list {
+    display:        flex;
+    flex-direction: column;
+    gap:            8px;
+  }
+  
+  .player-slot {
+    display:       flex;
+    align-items:   center;
+    gap:           10px;
+    padding:       10px 12px;
+    border-radius: 8px;
+    background:    rgba(255, 255, 255, 0.04);
+    border:        1px solid rgba(255, 255, 255, 0.07);
+    transition:    border-color 0.3s;
+  }
+  
+  .player-slot.conectado {
+    border-color: rgba(34, 197, 94, 0.4);
+  }
+  
+  .player-dot {
+    width:         14px;
+    height:        14px;
+    border-radius: 50%;
+    background:    #333;
+    flex-shrink:   0;
+  }
+  
+  .player-name {
+    font-size:   13px;
+    font-weight: 600;
+    color:       var(--muted);
+  }
+  
+  .player-slot.conectado .player-name {
+    color: var(--text);
+  }
+  
+  .player-llave {
+    margin-left: auto;
+    font-size:   14px;
+    display:     none;
+  }
+  
+  .player-slot.tiene-llave .player-llave {
+    display: block;
+  }
+  
+  #nivel-info {
+    font-size:    12px;
+    color:        var(--muted);
+    line-height:  1.6;
+    padding:      12px;
+    border-radius: 8px;
+    background:   rgba(124, 106, 247, 0.08);
+    border:       1px solid rgba(124, 106, 247, 0.2);
+  }
+  
+  #nivel-info strong {
+    color:        var(--accent);
+    display:      block;
+    margin-bottom: 6px;
+    font-size:    13px;
+  }
+  
+  #game-area {
+    flex:     1;
+    display:  flex;
+    flex-direction: column;
+    position: relative;
+  }
+  
+  #canvas-container {
+    flex:            1;
+    display:         flex;
+    align-items:     center;
+    justify-content: center;
+    padding:         16px;
+    position:        relative;
+  }
+  
+  #gameCanvas {
+    background:    #1c1b2e;
+    border-radius: 12px;
+    border:        1px solid var(--border);
+    box-shadow:    0 0 40px rgba(124, 106, 247, 0.1);
+    max-width:     100%;
+    max-height:    100%;
+  }
+  
+
+  #overlay-victoria {
+    position:        absolute;
+    inset:           0;
+    background:      rgba(15, 14, 23, 0.85);
+    display:         none;
+    flex-direction:  column;
+    align-items:     center;
+    justify-content: center;
+    gap:             16px;
+    z-index:         10;
+    border-radius:   12px;
+  }
+  
+  #overlay-victoria.visible {
+    display: flex;
+  }
+  
+  #overlay-victoria h2 {
+    font-size:   48px;
+    font-weight: 900;
+    color:       var(--accent2);
+    text-shadow: 0 0 30px var(--accent2);
+    animation:   pulse 1s infinite alternate;
+  }
+  
+  #overlay-victoria p {
+    font-size: 18px;
+    color:     var(--muted);
+  }
+  
+  @keyframes pulse {
+    from { opacity: 0.7; transform: scale(0.97); }
+    to   { opacity: 1;   transform: scale(1.03); }
+  }

@@ -1,13 +1,141 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>host-juego</title>
-  </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.ts"></script>
-  </body>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pico Park — Host</title>
+  <link rel="stylesheet" href="src/estilos/main.css" />
+</head>
+<body>
+
+  <!--PANTALLA 1: Sala de espera-->
+  <div id="pantalla-espera" class="pantalla activa">
+    <div class="espera-contenido">
+
+      <div class="logo">
+        <h1>Pico Park</h1>
+        <span>Sala de espera</span>
+      </div>
+
+      <div class="ip-section">
+        <p class="ip-label">Ingresá esta IP en tu celular</p>
+        <div id="ip-display" class="ip-valor">Obteniendo IP...</div>
+      </div>
+
+      <div class="jugadores-grid">
+        <div class="slot" id="slot-0">
+          <div class="slot-dot"></div>
+          <span class="slot-nombre">Esperando...</span>
+        </div>
+        <div class="slot" id="slot-1">
+          <div class="slot-dot"></div>
+          <span class="slot-nombre">Esperando...</span>
+        </div>
+        <div class="slot" id="slot-2">
+          <div class="slot-dot"></div>
+          <span class="slot-nombre">Esperando...</span>
+        </div>
+        <div class="slot" id="slot-3">
+          <div class="slot-dot"></div>
+          <span class="slot-nombre">Esperando...</span>
+        </div>
+      </div>
+
+      <p id="espera-mensaje" class="espera-mensaje">
+        Necesitás al menos <strong>3 jugadores</strong> para comenzar
+      </p>
+
+      <button id="btn-iniciar" class="btn-iniciar" disabled>
+        Iniciar
+      </button>
+
+    </div>
+  </div>
+
+  <!--PANTALLA 2: Lobby-->
+  <div id="pantalla-lobby" class="pantalla">
+    <div class="lobby-contenido">
+
+      <div class="logo">
+        <h1>Pico Park</h1>
+        <span>Seleccioná un nivel</span>
+      </div>
+
+      <div class="niveles-grid">
+        <div class="nivel-card" id="card-nivel-1" data-nivel="1">
+          <span class="nivel-numero">Nivel 1</span>
+        </div>
+        <div class="nivel-card" id="card-nivel-2" data-nivel="2">
+          <span class="nivel-numero">Nivel 2</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!--PANTALLA 3: Juego-->
+  <div id="pantalla-juego" class="pantalla">
+
+    <div id="sidebar">
+      <div class="logo">
+        <h1>Pico Park</h1>
+        <span id="sidebar-nivel-label">Nivel —</span>
+      </div>
+
+      <div id="ws-status">
+        <div id="ws-dot"></div>
+        <span id="ws-label">Conectando...</span>
+      </div>
+
+      <div id="players-section">
+        <h3>Jugadores — <span id="count">0</span>/4</h3>
+        <div id="player-list">
+          <div class="player-slot" id="pslot-0">
+            <div class="player-dot"></div>
+            <span class="player-name">Esperando...</span>
+            <span class="player-llave">🗝️</span>
+          </div>
+          <div class="player-slot" id="pslot-1">
+            <div class="player-dot"></div>
+            <span class="player-name">Esperando...</span>
+            <span class="player-llave">🗝️</span>
+          </div>
+          <div class="player-slot" id="pslot-2">
+            <div class="player-dot"></div>
+            <span class="player-name">Esperando...</span>
+            <span class="player-llave">🗝️</span>
+          </div>
+          <div class="player-slot" id="pslot-3">
+            <div class="player-dot"></div>
+            <span class="player-name">Esperando...</span>
+            <span class="player-llave">🗝️</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="nivel-info">
+        <strong id="nivel-info-titulo"></strong>
+        <p id="nivel-info-desc"></p>
+      </div>
+    </div>
+
+    <div id="game-area">
+      <div id="canvas-container">
+        <canvas id="gameCanvas" width="1280" height="720"></canvas>
+
+        <div id="overlay-victoria">
+          <h2>¡GANARON! 🎉</h2>
+          <p>Todos los jugadores cruzaron la puerta</p>
+          <button id="btn-volver-lobby" class="btn-iniciar">Volver al lobby</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="src/js/websocket.js"></script>
+  <script src="src/js/ui.js"></script>
+  <script src="src/js/renderer.js"></script>
+  <script src="src/js/main.js"></script>
+</body>
 </html>
