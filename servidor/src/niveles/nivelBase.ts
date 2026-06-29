@@ -15,7 +15,7 @@ export abstract class NivelBase {
   protected ganado:    boolean = false;
 
   private intervalo:   ReturnType<typeof setInterval> | null = null;
-  private broadcast:   BroadcastFn;
+  protected broadcast:   BroadcastFn;
 
   constructor(broadcast: BroadcastFn) {
     this.broadcast = broadcast;
@@ -38,6 +38,9 @@ export abstract class NivelBase {
 
   /** Posición de spawn de jugadores (puede variar por nivel). */
   protected abstract spawnJugador(indice: number): { x: number; y: number };
+
+  protected onColisionExtra(_bodyA: Matter.Body, _bodyB: Matter.Body): void {}
+  // ─────────────────────────────────────────────────────────────────────────
 
   // ── Gestión de jugadores ───────────────────────────────────────────────────
 
@@ -108,7 +111,6 @@ export abstract class NivelBase {
   // ── Detección de suelo (colisiones activas) ────────────────────────────────
 
   private actualizarEnSuelo(): void {
-    // Resetear cada tick
     for (const jugador of this.jugadores.values()) {
       jugador.enSuelo = false;
     }
@@ -144,12 +146,6 @@ export abstract class NivelBase {
     });
   }
 
-  /**
-   * Maneja colisiones comunes a todos los niveles:
-   * - jugador toca llave
-   * - jugador toca a portador de llave (transferencia)
-   * - jugador entra a la puerta
-   */
   private manejarColision(bodyA: Matter.Body, bodyB: Matter.Body): void {
     if (!bodyB.label.startsWith("jugador_")) return;
 
@@ -170,6 +166,9 @@ export abstract class NivelBase {
     if (bodyA.label === "puerta") {
       this.onJugadorTocaPuerta(jugador);
     }
+
+    this.onColisionExtra(bodyA, bodyB);
+    // ──────────────────────────────────────────────────────────────────────
   }
 
   // ── Eventos de colisión ────────────────────────────────────────────────────
