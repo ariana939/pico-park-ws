@@ -8,16 +8,16 @@ import Matter from "matter-js";
 // ── Coordenadas del mapa del Nivel 2 ──────────────────────────────────────────
 const SPAWN_X_BASE   = 80;
 const SPAWN_Y        = ALTO_MUNDO - 120;
-const HUECO_X_INICIO = 600;
-const HUECO_X_FIN    = 700;
-const PLATAFORMA_X   = 820;
+const HUECO_X_INICIO = 1000;
+const HUECO_X_FIN    = 1100;
+const PLATAFORMA_X   = 610;
 const PLATAFORMA_Y   = ALTO_MUNDO - 250;
 const CAJA_SPAWN_X   = 200;
 const CAJA_SPAWN_Y   = ALTO_MUNDO - 120;
 const LLAVE_SPAWN_X  = PLATAFORMA_X;
 const LLAVE_SPAWN_Y  = PLATAFORMA_Y - 40;
 const PUERTA_X       = ANCHO_MUNDO - 60;
-const PUERTA_Y       = ALTO_MUNDO - 100;
+const PUERTA_Y       = ALTO_MUNDO - 60;
 
 export class Nivel2 extends NivelBase {
   private caja!: Caja;
