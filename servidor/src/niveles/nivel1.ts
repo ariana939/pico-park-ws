@@ -31,7 +31,7 @@ const HOYO_GRANDE_X_FIN    = 900;
 
 // Plataforma flotante con la llave (sobre el hoyo grande)
 const PLATAFORMA_FLOTANTE_X     = (HOYO_GRANDE_X_INICIO + HOYO_GRANDE_X_FIN) / 2;
-const PLATAFORMA_FLOTANTE_Y     = ALTO_MUNDO - 280;
+const PLATAFORMA_FLOTANTE_Y     = ALTO_MUNDO - 260;
 const PLATAFORMA_FLOTANTE_ANCHO = 120;
 
 // Llave: encima de la plataforma flotante

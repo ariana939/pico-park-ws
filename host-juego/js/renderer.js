@@ -27,6 +27,7 @@ const Renderer = (() => {
     dibujarFondo();
 
     if (estadoActual) {
+      console.log("jugadores:", estadoActual.jugadores); // ← agregá esta línea
       const { mapa, jugadores, caja, llave, puerta } = estadoActual;
       const nivel = estadoActual.nivel;
 

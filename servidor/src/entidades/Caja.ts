@@ -2,8 +2,8 @@ import Matter from "matter-js";
 import { Jugador } from "./Jugador";
 
 const FUERZA_POR_JUGADOR = 0.005;
-const RANGO_CONTACTO_X   = 55;   // distancia horizontal para considerar que empuja
-const RANGO_CONTACTO_Y   = 80;   // distancia vertical para considerar que empuja
+const RANGO_CONTACTO_X   = 45;
+const RANGO_CONTACTO_Y   = 50;
 
 export interface DatosCaja {
   x:      number;

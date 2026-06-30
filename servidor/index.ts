@@ -1,22 +1,18 @@
 import { WebSocketServidor } from "../servidor/src/red/webSocketServidor";
-import { Nivel1 } from "../servidor/src/niveles/nivel1"; 
+import { Nivel1 } from "../servidor/src/niveles/nivel1";
 import { Nivel2 } from "../servidor/src/niveles/nivel2";
 
 const PUERTO = 3000;
 
-//Crear el servidor de red
 const servidor = new WebSocketServidor();
 
-//Crear el nivel con la función de broadcast del servidor
+// Crear e inicializar los niveles (configura el mundo físico de cada uno)
 const nivel1 = new Nivel1((datos) => servidor.broadcast(datos));
 const nivel2 = new Nivel2((datos) => servidor.broadcast(datos));
-
 nivel1.inicializar();
 nivel2.inicializar();
 
-//Conectar el nivel al servidor y arrancar el game loop
-servidor.setNivel(nivel1);
-nivel1.iniciar();
+// El lobby elige cuál iniciar — el servidor cambia el nivel activo
+servidor.setNiveles({ 1: nivel1, 2: nivel2 });
 
-//Escuchar conexiones
 servidor.escuchar(PUERTO);
