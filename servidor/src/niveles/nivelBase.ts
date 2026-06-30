@@ -127,14 +127,22 @@ export abstract class NivelBase {
   }
 
   private marcarEnSuelo(soporte: Matter.Body, candidato: Matter.Body, labels: string[]): void {
-    if (!labels.includes(soporte.label)) return;
+    // Superficies válidas: suelo/plataforma/caja Y otros jugadores
+    const esSoporte = labels.includes(soporte.label) || soporte.label.startsWith("jugador_");
+    if (!esSoporte) return;
     if (!candidato.label.startsWith("jugador_")) return;
-
+ 
+    // Evitar que un jugador se marque a sí mismo
+    if (soporte.label === candidato.label) return;
+ 
+    // Solo marcar en suelo si el soporte está realmente debajo
+    if (soporte.position.y <= candidato.position.y) return;
+ 
     const id      = candidato.label.replace("jugador_", "");
     const jugador = this.jugadores.get(id);
     if (jugador) jugador.enSuelo = true;
   }
-
+  
   // ── Colisiones ─────────────────────────────────────────────────────────────
 
   private registrarColisiones(): void {
