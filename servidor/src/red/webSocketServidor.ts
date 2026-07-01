@@ -29,12 +29,18 @@ export class WebSocketServidor {
     this.configurarWebSocket();
   }
 
+  // ── API pública ────────────────────────────────────────────────────────────
+
   setNiveles(niveles: Record<number, NivelBase>): void {
     this.niveles = niveles;
   }
 
   private cambiarNivel(numero: number): void {
-    this.nivel?.detener();
+    // 1. Detener y limpiar nivel anterior
+    if (this.nivel) {
+      this.nivel.detener();
+      this.nivel.limpiarJugadores();
+    }
 
     const siguiente = this.niveles[numero];
     if (!siguiente) {
@@ -42,9 +48,15 @@ export class WebSocketServidor {
       return;
     }
 
+    // 2. Agregar todos los jugadores conectados al nuevo nivel
+    for (const [id] of this.sala) {
+      siguiente.agregarJugador(id);
+    }
+
+    // 3. Iniciar el nuevo nivel
     this.nivel = siguiente;
     this.nivel.iniciar();
-    console.log(`[NIVEL] Iniciando Nivel ${numero}`);
+    console.log(`[NIVEL] Iniciando Nivel ${numero} con ${this.sala.size} jugadores`);
 
     this.broadcast({ tipo: "nivel_iniciado", nivel: numero });
   }
@@ -69,6 +81,8 @@ export class WebSocketServidor {
     }
     return "localhost";
   }
+
+  // ── Rutas HTTP ─────────────────────────────────────────────────────────────
 
   private configurarRutas(): void {
     this.app.get("/", () =>
@@ -104,6 +118,8 @@ export class WebSocketServidor {
     });
   }
 
+  // ── WebSocket ──────────────────────────────────────────────────────────────
+
   private configurarWebSocket(): void {
     this.app.ws("/ws", {
       open:    (ws) => this.onConexion(ws),
@@ -113,17 +129,20 @@ export class WebSocketServidor {
   }
 
   private onConexion(ws: any): void {
+    // Leer ?tipo=display para identificar al navegador PC
     const url       = new URL(ws.data.url, "http://localhost");
     const esDisplay = url.searchParams.get("tipo") === "display";
 
+    // Siempre agregar a conexiones para que reciba broadcasts
     this.conexiones.set(ws.id, ws);
 
     if (esDisplay) {
       this.displays.add(ws.id);
       console.log(`[DISPLAY] Host conectado`);
-      return;
+      return; // no se registra como jugador
     }
 
+    // A partir de acá, solo celulares
     if (this.sala.size >= MAX_JUGADORES) {
       ws.send(JSON.stringify({ tipo: "sala_llena", mensaje: "Sala llena (máx. 4 jugadores)." }));
       ws.close();
@@ -134,7 +153,8 @@ export class WebSocketServidor {
     const color  = COLORES_SIDEBAR[indice]!;
 
     this.sala.set(ws.id, { indice, color, ws });
-    this.nivel?.agregarJugador(ws.id);
+    // No agregamos al nivel acá — cambiarNivel() es el responsable
+    // de agregar todos los jugadores conectados cuando se elige un nivel
 
     console.log(`[+] Jugador ${indice + 1} conectado | Sala: ${this.sala.size}/${MAX_JUGADORES}`);
 

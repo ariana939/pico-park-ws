@@ -15,7 +15,7 @@ export abstract class NivelBase {
   protected ganado:    boolean = false;
 
   private intervalo:   ReturnType<typeof setInterval> | null = null;
-  protected broadcast:   BroadcastFn;
+  private broadcast:   BroadcastFn;
 
   constructor(broadcast: BroadcastFn) {
     this.broadcast = broadcast;
@@ -23,11 +23,18 @@ export abstract class NivelBase {
     this.world     = this.engine.world;
   }
 
-  public inicializar(): void {
+  /**
+   * Debe llamarse después del constructor, una vez que la subclase
+   * está completamente inicializada.
+   */
+  inicializar(): void {
     this.configurarMundo();
     this.registrarColisiones();
   }
 
+  // ── Métodos abstractos que cada nivel debe implementar ──────────────────────
+
+  /** Construye el mapa: suelos, plataformas, sensores, llave, puerta. */
   protected abstract configurarMundo(): void;
 
   /** Lógica de física específica del nivel (ej: fuerza de caja en Nivel2). */
@@ -39,9 +46,6 @@ export abstract class NivelBase {
   /** Posición de spawn de jugadores (puede variar por nivel). */
   protected abstract spawnJugador(indice: number): { x: number; y: number };
 
-  protected onColisionExtra(_bodyA: Matter.Body, _bodyB: Matter.Body): void {}
-  // ─────────────────────────────────────────────────────────────────────────
-
   // ── Gestión de jugadores ───────────────────────────────────────────────────
 
   agregarJugador(id: string): Jugador {
@@ -52,6 +56,14 @@ export abstract class NivelBase {
     Matter.World.add(this.world, jugador.cuerpo);
     this.jugadores.set(id, jugador);
     return jugador;
+  }
+
+  limpiarJugadores(): void {
+    for (const jugador of this.jugadores.values()) {
+      Matter.World.remove(this.world, jugador.cuerpo);
+    }
+    this.jugadores.clear();
+    this.ganado = false;
   }
 
   eliminarJugador(id: string): void {
@@ -111,6 +123,7 @@ export abstract class NivelBase {
   // ── Detección de suelo (colisiones activas) ────────────────────────────────
 
   private actualizarEnSuelo(): void {
+    // Resetear cada tick
     for (const jugador of this.jugadores.values()) {
       jugador.enSuelo = false;
     }
@@ -131,18 +144,18 @@ export abstract class NivelBase {
     const esSoporte = labels.includes(soporte.label) || soporte.label.startsWith("jugador_");
     if (!esSoporte) return;
     if (!candidato.label.startsWith("jugador_")) return;
- 
+
     // Evitar que un jugador se marque a sí mismo
     if (soporte.label === candidato.label) return;
- 
+
     // Solo marcar en suelo si el soporte está realmente debajo
     if (soporte.position.y <= candidato.position.y) return;
- 
+
     const id      = candidato.label.replace("jugador_", "");
     const jugador = this.jugadores.get(id);
     if (jugador) jugador.enSuelo = true;
   }
-  
+
   // ── Colisiones ─────────────────────────────────────────────────────────────
 
   private registrarColisiones(): void {
@@ -154,6 +167,12 @@ export abstract class NivelBase {
     });
   }
 
+  /**
+   * Maneja colisiones comunes a todos los niveles:
+   * - jugador toca llave
+   * - jugador toca a portador de llave (transferencia)
+   * - jugador entra a la puerta
+   */
   private manejarColision(bodyA: Matter.Body, bodyB: Matter.Body): void {
     if (!bodyB.label.startsWith("jugador_")) return;
 
@@ -174,9 +193,6 @@ export abstract class NivelBase {
     if (bodyA.label === "puerta") {
       this.onJugadorTocaPuerta(jugador);
     }
-
-    this.onColisionExtra(bodyA, bodyB);
-    // ──────────────────────────────────────────────────────────────────────
   }
 
   // ── Eventos de colisión ────────────────────────────────────────────────────
