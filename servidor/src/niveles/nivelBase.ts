@@ -23,30 +23,20 @@ export abstract class NivelBase {
     this.world     = this.engine.world;
   }
 
-  /**
-   * Debe llamarse después del constructor, una vez que la subclase
-   * está completamente inicializada.
-   */
   inicializar(): void {
     this.configurarMundo();
     this.registrarColisiones();
   }
-
-  // ── Métodos abstractos que cada nivel debe implementar ──────────────────────
-
-  /** Construye el mapa: suelos, plataformas, sensores, llave, puerta. */
+  
   protected abstract configurarMundo(): void;
 
-  /** Lógica de física específica del nivel (ej: fuerza de caja en Nivel2). */
   protected abstract tickEspecifico(): void;
 
-  /** Datos extra del nivel para serializar (ej: caja, mapa). */
   protected abstract serializarExtra(): object;
 
-  /** Posición de spawn de jugadores (puede variar por nivel). */
   protected abstract spawnJugador(indice: number): { x: number; y: number };
 
-  // ── Gestión de jugadores ───────────────────────────────────────────────────
+  protected onColisionExtra(_bodyA: Matter.Body, _bodyB: Matter.Body): void {}
 
   agregarJugador(id: string): Jugador {
     const indice  = this.jugadores.size;
@@ -99,8 +89,6 @@ export abstract class NivelBase {
     }
   }
 
-  // ── Tick interno ───────────────────────────────────────────────────────────
-
   private tick(): void {
     this.actualizarEnSuelo();
     this.aplicarMovimientosJugadores();
@@ -111,16 +99,12 @@ export abstract class NivelBase {
     this.broadcast(this.serializar());
   }
 
-  // ── Movimiento de jugadores ────────────────────────────────────────────────
-
   private aplicarMovimientosJugadores(): void {
     for (const jugador of this.jugadores.values()) {
       jugador.aplicarMovimiento();
       jugador.intentarSalto();
     }
   }
-
-  // ── Detección de suelo (colisiones activas) ────────────────────────────────
 
   private actualizarEnSuelo(): void {
     // Resetear cada tick
@@ -167,12 +151,6 @@ export abstract class NivelBase {
     });
   }
 
-  /**
-   * Maneja colisiones comunes a todos los niveles:
-   * - jugador toca llave
-   * - jugador toca a portador de llave (transferencia)
-   * - jugador entra a la puerta
-   */
   private manejarColision(bodyA: Matter.Body, bodyB: Matter.Body): void {
     if (!bodyB.label.startsWith("jugador_")) return;
 
@@ -193,9 +171,9 @@ export abstract class NivelBase {
     if (bodyA.label === "puerta") {
       this.onJugadorTocaPuerta(jugador);
     }
-  }
 
-  // ── Eventos de colisión ────────────────────────────────────────────────────
+    this.onColisionExtra(bodyA, bodyB);
+  }
 
   private onJugadorTocaLlave(jugador: Jugador): void {
     const recogida = this.llave.intentarRecoger(jugador);
@@ -223,8 +201,6 @@ export abstract class NivelBase {
     }
   }
 
-  // ── Victoria ───────────────────────────────────────────────────────────────
-
   private verificarVictoria(): void {
     if (!this.puerta.todosPassaron(this.jugadores.size)) return;
 
@@ -232,8 +208,6 @@ export abstract class NivelBase {
     this.broadcast({ tipo: "nivel_ganado" });
     this.detener();
   }
-
-  // ── Detección de caídas al vacío ───────────────────────────────────────────
 
   private detectarCaidas(): void {
     for (const jugador of this.jugadores.values()) {
@@ -256,8 +230,6 @@ export abstract class NivelBase {
     this.puerta.registrarSalida(jugador.id);
     this.broadcast({ tipo: "jugador_respawn", jugadorId: jugador.id });
   }
-
-  // ── Serialización ──────────────────────────────────────────────────────────
 
   private serializar(): object {
     return {
