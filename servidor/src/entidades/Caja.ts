@@ -2,8 +2,6 @@ import Matter from "matter-js";
 import { Jugador } from "./Jugador";
 
 const FUERZA_POR_JUGADOR = 0.005;
-const RANGO_CONTACTO_X   = 45;
-const RANGO_CONTACTO_Y   = 50;
 
 export interface DatosCaja {
   x:      number;
@@ -15,6 +13,8 @@ export class Caja {
   readonly cuerpo: Matter.Body;
   private spawnX:  number;
   private spawnY:  number;
+
+  private jugadoresTocando: Set<string> = new Set();
 
   constructor(world: Matter.World, spawnX: number, spawnY: number) {
     this.spawnX = spawnX;
@@ -31,35 +31,38 @@ export class Caja {
     Matter.World.add(world, this.cuerpo);
   }
 
+  registrarContacto(jugadorId: string): void {
+    this.jugadoresTocando.add(jugadorId);
+  }
+
+  quitarContacto(jugadorId: string): void {
+    this.jugadoresTocando.delete(jugadorId);
+  }
+
   aplicarFuerzaDeJugadores(jugadores: Jugador[]): void {
-    const cajaPos = this.cuerpo.position;
     let jugadoresDer = 0;
     let jugadoresIzq = 0;
 
     for (const jugador of jugadores) {
-      const jugadorPos = jugador.cuerpo.position;
-      const distX      = jugadorPos.x - cajaPos.x;
-      const distY      = Math.abs(jugadorPos.y - cajaPos.y);
+      if (!this.jugadoresTocando.has(jugador.id)) continue;
 
-      if (distY > RANGO_CONTACTO_Y) continue; // no está cerca verticalmente
+      const distX = jugador.cuerpo.position.x - this.cuerpo.position.x;
 
-      const empujandoDer = jugador.inputs.derecha  && distX < -RANGO_CONTACTO_X;
-      const empujandoIzq = jugador.inputs.izquierda && distX > RANGO_CONTACTO_X;
-
-      if (empujandoDer) jugadoresDer++;
-      if (empujandoIzq) jugadoresIzq++;
+      if (jugador.inputs.derecha  && distX < 0) jugadoresDer++;
+      if (jugador.inputs.izquierda && distX > 0) jugadoresIzq++;
     }
 
     const fuerzaNeta = (jugadoresDer - jugadoresIzq) * FUERZA_POR_JUGADOR;
     if (fuerzaNeta === 0) return;
 
-    Matter.Body.applyForce(this.cuerpo, cajaPos, { x: fuerzaNeta, y: 0 });
+    Matter.Body.applyForce(this.cuerpo, this.cuerpo.position, { x: fuerzaNeta, y: 0 });
   }
 
   respawnear(): void {
     Matter.Body.setPosition(this.cuerpo, { x: this.spawnX, y: this.spawnY });
     Matter.Body.setVelocity(this.cuerpo, { x: 0, y: 0 });
     Matter.Body.setAngle(this.cuerpo, 0);
+    this.jugadoresTocando.clear();
   }
 
   serializar(): DatosCaja {

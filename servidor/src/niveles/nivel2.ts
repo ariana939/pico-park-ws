@@ -5,19 +5,18 @@ import { Llave } from "../entidades/Llave";
 import { Puerta } from "../entidades/Puerta";
 import Matter from "matter-js";
 
-// ── Coordenadas del mapa del Nivel 2 ──────────────────────────────────────────
 const SPAWN_X_BASE   = 80;
 const SPAWN_Y        = ALTO_MUNDO - 120;
-const HUECO_X_INICIO = 1000;
-const HUECO_X_FIN    = 1100;
-const PLATAFORMA_X   = 610;
+const HUECO_X_INICIO = 600;
+const HUECO_X_FIN    = 700;
+const PLATAFORMA_X   = 820;
 const PLATAFORMA_Y   = ALTO_MUNDO - 250;
 const CAJA_SPAWN_X   = 200;
 const CAJA_SPAWN_Y   = ALTO_MUNDO - 120;
 const LLAVE_SPAWN_X  = PLATAFORMA_X;
 const LLAVE_SPAWN_Y  = PLATAFORMA_Y - 40;
 const PUERTA_X       = ANCHO_MUNDO - 60;
-const PUERTA_Y       = ALTO_MUNDO - 60;
+const PUERTA_Y       = ALTO_MUNDO - 100;
 
 export class Nivel2 extends NivelBase {
   private caja!: Caja;
@@ -25,8 +24,6 @@ export class Nivel2 extends NivelBase {
   constructor(broadcast: BroadcastFn) {
     super(broadcast);
   }
-
-  // ── Implementaciones obligatorias de NivelBase ────────────────────────────
 
   protected configurarMundo(): void {
     crearLimitesBase(this.world, HUECO_X_INICIO, HUECO_X_FIN);
@@ -37,7 +34,7 @@ export class Nivel2 extends NivelBase {
     this.puerta = new Puerta(this.world, PUERTA_X, PUERTA_Y);
   }
 
-  protected tickEspecifico(): void { 
+  protected tickEspecifico(): void {
     this.caja.aplicarFuerzaDeJugadores([...this.jugadores.values()]);
   }
 
@@ -65,14 +62,31 @@ export class Nivel2 extends NivelBase {
     };
   }
 
-  // ── Plataforma elevada (específica del nivel 2) ───────────────────────────
+  protected override onColisionExtra(bodyA: Matter.Body, bodyB: Matter.Body): void {
+    this.actualizarContactoCaja(bodyA, bodyB, true);
+    this.actualizarContactoCaja(bodyB, bodyA, true);
+  }
+
+  protected override onColisionExtraFin(bodyA: Matter.Body, bodyB: Matter.Body): void {
+    this.actualizarContactoCaja(bodyA, bodyB, false);
+    this.actualizarContactoCaja(bodyB, bodyA, false);
+  }
+
+  private actualizarContactoCaja(cuerpoA: Matter.Body, cuerpoB: Matter.Body, iniciando: boolean): void {
+    if (cuerpoA.label !== "caja") return;
+    if (!cuerpoB.label.startsWith("jugador_")) return;
+
+    const jugadorId = cuerpoB.label.replace("jugador_", "");
+    if (iniciando) {
+      this.caja.registrarContacto(jugadorId);
+    } else {
+      this.caja.quitarContacto(jugadorId);
+    }
+  }
 
   private crearPlataforma(): void {
     const plataforma = Matter.Bodies.rectangle(
-      PLATAFORMA_X,
-      PLATAFORMA_Y,
-      200,
-      20,
+      PLATAFORMA_X, PLATAFORMA_Y, 200, 20,
       { isStatic: true, label: "plataforma", friction: 0.8 }
     );
     Matter.World.add(this.world, plataforma);

@@ -27,7 +27,7 @@ export abstract class NivelBase {
     this.configurarMundo();
     this.registrarColisiones();
   }
-  
+
   protected abstract configurarMundo(): void;
 
   protected abstract tickEspecifico(): void;
@@ -37,6 +37,8 @@ export abstract class NivelBase {
   protected abstract spawnJugador(indice: number): { x: number; y: number };
 
   protected onColisionExtra(_bodyA: Matter.Body, _bodyB: Matter.Body): void {}
+
+  protected onColisionExtraFin(_bodyA: Matter.Body, _bodyB: Matter.Body): void {}
 
   agregarJugador(id: string): Jugador {
     const indice  = this.jugadores.size;
@@ -74,8 +76,6 @@ export abstract class NivelBase {
     this.jugadores.get(id)?.procesarInput(tipo, estado, direccion);
   }
 
-  // ── Game loop ──────────────────────────────────────────────────────────────
-
   iniciar(): void {
     this.intervalo = setInterval(() => {
       this.tick();
@@ -89,6 +89,8 @@ export abstract class NivelBase {
     }
   }
 
+  // ── Tick interno ───────────────────────────────────────────────────────────
+
   private tick(): void {
     this.actualizarEnSuelo();
     this.aplicarMovimientosJugadores();
@@ -99,12 +101,16 @@ export abstract class NivelBase {
     this.broadcast(this.serializar());
   }
 
+  // ── Movimiento de jugadores ────────────────────────────────────────────────
+
   private aplicarMovimientosJugadores(): void {
     for (const jugador of this.jugadores.values()) {
       jugador.aplicarMovimiento();
       jugador.intentarSalto();
     }
   }
+
+  // ── Detección de suelo (colisiones activas) ────────────────────────────────
 
   private actualizarEnSuelo(): void {
     // Resetear cada tick
@@ -147,10 +153,25 @@ export abstract class NivelBase {
       for (const par of event.pairs) {
         this.manejarColision(par.bodyA, par.bodyB);
         this.manejarColision(par.bodyB, par.bodyA);
+        this.onColisionExtra(par.bodyA, par.bodyB);
+        this.onColisionExtra(par.bodyB, par.bodyA);
+      }
+    });
+
+    Matter.Events.on(this.engine, "collisionEnd", (event) => {
+      for (const par of event.pairs) {
+        this.onColisionExtraFin(par.bodyA, par.bodyB);
+        this.onColisionExtraFin(par.bodyB, par.bodyA);
       }
     });
   }
 
+  /**
+   * Maneja colisiones comunes a todos los niveles:
+   * - jugador toca llave
+   * - jugador toca a portador de llave (transferencia)
+   * - jugador entra a la puerta
+   */
   private manejarColision(bodyA: Matter.Body, bodyB: Matter.Body): void {
     if (!bodyB.label.startsWith("jugador_")) return;
 
@@ -171,9 +192,9 @@ export abstract class NivelBase {
     if (bodyA.label === "puerta") {
       this.onJugadorTocaPuerta(jugador);
     }
-
-    this.onColisionExtra(bodyA, bodyB);
   }
+
+  // ── Eventos de colisión ────────────────────────────────────────────────────
 
   private onJugadorTocaLlave(jugador: Jugador): void {
     const recogida = this.llave.intentarRecoger(jugador);
@@ -201,6 +222,8 @@ export abstract class NivelBase {
     }
   }
 
+  // ── Victoria ───────────────────────────────────────────────────────────────
+
   private verificarVictoria(): void {
     if (!this.puerta.todosPassaron(this.jugadores.size)) return;
 
@@ -208,6 +231,8 @@ export abstract class NivelBase {
     this.broadcast({ tipo: "nivel_ganado" });
     this.detener();
   }
+
+  // ── Detección de caídas al vacío ───────────────────────────────────────────
 
   private detectarCaidas(): void {
     for (const jugador of this.jugadores.values()) {
