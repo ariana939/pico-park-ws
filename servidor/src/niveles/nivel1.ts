@@ -49,7 +49,7 @@ const PISO_PUENTE_ANCHO = HOYO_GRANDE_X_FIN - HOYO_GRANDE_X_INICIO;
 
 // Puerta: al final a la derecha
 const PUERTA_X = ANCHO_MUNDO - 60;
-const PUERTA_Y = ALTO_MUNDO - 100;
+const PUERTA_Y = ALTO_MUNDO - 60;
 
 // Boost de velocidad para el jugador con llave
 const BOOST_VELOCIDAD_LLAVE = VELOCIDAD_JUGADOR * 1.6;
