@@ -33,15 +33,10 @@ jobs:
 
   desplegar-vm:
     needs: construir-imagen
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
-      - name: Desplegar en la VM por SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.VM_HOST }}
-          username: ${{ secrets.VM_USERNAME }}
-          password: ${{ secrets.VM_PASSWORD }}
-          script: |
-            cd /home/Ariana/pico-park-ws
-            docker compose pull
-            docker compose up -d
+      - name: Desplegar contenedores localmente
+        run: |
+          cd /home/Ariana/pico-park-ws
+          docker compose pull
+          docker compose up -d
