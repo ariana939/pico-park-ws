@@ -30,3 +30,18 @@ jobs:
           file: servidor/Dockerfile
           push: true
           tags: ariana939/picopark-server:latest
+
+  desplegar-vm:
+    needs: construir-imagen
+    runs-on: ubuntu-latest
+    steps:
+      - name: Desplegar en la VM por SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USERNAME }}
+          password: ${{ secrets.VM_PASSWORD }}
+          script: |
+            cd /home/Ariana/pico-park-ws
+            docker compose pull
+            docker compose up -d
