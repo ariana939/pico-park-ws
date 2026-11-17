@@ -1,9 +1,9 @@
 import Matter from "matter-js";
-import { NivelBase, type BroadcastFn } from "./nivelBase";
-import { crearLimitesBase, ANCHO_MUNDO, ALTO_MUNDO } from "../fisica/mundoFisico";
-import { Llave } from "../entidades/Llave";
-import { Puerta } from "../entidades/Puerta";
-import { Jugador, VELOCIDAD_JUGADOR } from "../entidades/Jugador";
+import { NivelBase, type BroadcastFn } from "./nivelBase.ts";
+import { crearLimitesBase, ANCHO_MUNDO, ALTO_MUNDO } from "../fisica/mundoFisico.ts";
+import { Llave } from "../entidades/Llave.ts";
+import { Puerta } from "../entidades/Puerta.ts";
+import { Jugador, VELOCIDAD_JUGADOR } from "../entidades/Jugador.ts";
 
 // ── Coordenadas del mapa ───────────────────────────────────────────────────────
 

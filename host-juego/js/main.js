@@ -51,7 +51,7 @@ WS.on('nivel_iniciado', (data) => {
 });
 
 document.getElementById('btn-iniciar').addEventListener('click', () => {
-  if (totalJugadores < 3) return;
+  if (totalJugadores < 1) return;
   Pantallas.ir('pantalla-lobby');
 });
 

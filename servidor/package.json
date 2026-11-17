@@ -14,8 +14,10 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "@elysiajs/node": "^1.4.5",
     "elysia": "^1.4.28",
     "express": "^5.2.1",
+    "matter-js": "^0.20.0",
     "socket.io": "^4.8.3"
   }
 }

@@ -1,6 +1,9 @@
 import Elysia from "elysia";
+import { node } from "@elysiajs/node";
 import os from "os";
-import { NivelBase } from "../niveles/nivelBase";
+import fs from "node:fs";
+import crypto from "node:crypto";
+import { NivelBase } from "../niveles/nivelBase.ts";
 
 const MAX_JUGADORES   = 4;
 const COLORES_SIDEBAR = ["#ef4444", "#3b82f6", "#22c55e", "#f59e0b"];
@@ -8,6 +11,23 @@ const COLORES_SIDEBAR = ["#ef4444", "#3b82f6", "#22c55e", "#f59e0b"];
 const TIPOS_VALIDOS       = new Set(["movimiento", "salto"]);
 const ESTADOS_VALIDOS     = new Set(["keydown", "keyup"]);
 const DIRECCIONES_VALIDAS = new Set(["izquierda", "derecha", "arriba", "abajo"]);
+
+const MIME_TYPES: Record<string, string> = {
+  ".html": "text/html",
+  ".css":  "text/css",
+  ".js":   "application/javascript",
+  ".json": "application/json",
+  ".png":  "image/png",
+  ".jpg":  "image/jpeg",
+  ".svg":  "image/svg+xml",
+};
+
+function servirArchivo(rutaRelativa: string): Response {
+  const buffer = fs.readFileSync(rutaRelativa);
+  const ext = rutaRelativa.slice(rutaRelativa.lastIndexOf("."));
+  const contentType = MIME_TYPES[ext] ?? "application/octet-stream";
+  return new Response(buffer, { headers: { "Content-Type": contentType } });
+}
 
 interface DatosConexion {
   indice: number;
@@ -22,21 +42,39 @@ export class WebSocketServidor {
   private displays:   Set<string>                = new Set();
   private nivel:      NivelBase | null           = null;
   private niveles:    Record<number, NivelBase>  = {};
+  private wsIds:      WeakMap<object, string>    = new WeakMap();
 
   constructor() {
-    this.app = new Elysia();
+    this.app = new Elysia({ adapter: node() });
     this.configurarRutas();
     this.configurarWebSocket();
+    this.iniciarPing();
   }
-
+  private iniciarPing(): void {
+    setInterval(() => {
+      for (const ws of this.conexiones.values()) {
+	try { ws.send(JSON.stringify({ tipo: "ping" })); } catch (_) {}
+      }
+    }, 15000);
+  }
   // ── API pública ────────────────────────────────────────────────────────────
 
   setNiveles(niveles: Record<number, NivelBase>): void {
     this.niveles = niveles;
   }
 
+  private idDe(ws: any): string {
+  const clave = ws.raw ?? ws.data ?? ws;
+  let id = this.wsIds.get(clave);
+  if (!id) {
+    id = crypto.randomUUID();
+    this.wsIds.set(clave, id);
+  }
+  return id;
+}
+
+
   private cambiarNivel(numero: number): void {
-    // 1. Detener y limpiar nivel anterior
     if (this.nivel) {
       this.nivel.detener();
       this.nivel.limpiarJugadores();
@@ -48,12 +86,10 @@ export class WebSocketServidor {
       return;
     }
 
-    // 2. Agregar todos los jugadores conectados al nuevo nivel
     for (const [id] of this.sala) {
       siguiente.agregarJugador(id);
     }
 
-    // 3. Iniciar el nuevo nivel
     this.nivel = siguiente;
     this.nivel.iniciar();
     console.log(`[NIVEL] Iniciando Nivel ${numero} con ${this.sala.size} jugadores`);
@@ -66,6 +102,7 @@ export class WebSocketServidor {
   }
 
   broadcast(datos: object): void {
+    console.log(`[BROADCAST] Enviando "${(datos as any).tipo}" a ${this.conexiones.size} conexión(es)`);
     const msg = JSON.stringify(datos);
     for (const ws of this.conexiones.values()) {
       try { ws.send(msg); } catch (_) { /* ws ya cerrado */ }
@@ -85,25 +122,22 @@ export class WebSocketServidor {
   // ── Rutas HTTP ─────────────────────────────────────────────────────────────
 
   private configurarRutas(): void {
-    this.app.get("/", () =>
-      new Response(Bun.file("./host-juego/index.html"), {
-        headers: { "Content-Type": "text/html" },
-      })
-    );
+    this.app.get("/", () => servirArchivo("../host-juego/index.html"));
 
     this.app.get("/estilos/*", ({ request }) => {
       const url = new URL(request.url);
-      return new Response(Bun.file(`./host-juego${url.pathname}`));
+      return servirArchivo(`../host-juego${url.pathname}`);
     });
 
     this.app.get("/js/*", ({ request }) => {
       const url = new URL(request.url);
-      return new Response(Bun.file(`./host-juego${url.pathname}`));
+      return servirArchivo(`../host-juego${url.pathname}`);
     });
 
     this.app.get("/ip", () => {
-      const ip = this.getLocalIP();
-      return { ip, puerto: 3000, url: `ws://${ip}:3000/ws` };
+      const ip     = process.env.HOST_PUBLICO   ?? this.getLocalIP();
+      const puerto = Number(process.env.PUERTO_PUBLICO ?? 3000);
+      return { ip, puerto, url: `ws://${ip}:${puerto}/ws` };
     });
 
     this.app.onStart(({ server }) => {
@@ -129,20 +163,19 @@ export class WebSocketServidor {
   }
 
   private onConexion(ws: any): void {
-    // Leer ?tipo=display para identificar al navegador PC
+    const id = this.idDe(ws);
+
     const url       = new URL(ws.data.url, "http://localhost");
     const esDisplay = url.searchParams.get("tipo") === "display";
 
-    // Siempre agregar a conexiones para que reciba broadcasts
-    this.conexiones.set(ws.id, ws);
+    this.conexiones.set(id, ws);
 
     if (esDisplay) {
-      this.displays.add(ws.id);
+      this.displays.add(id);
       console.log(`[DISPLAY] Host conectado`);
-      return; // no se registra como jugador
+      return;
     }
 
-    // A partir de acá, solo celulares
     if (this.sala.size >= MAX_JUGADORES) {
       ws.send(JSON.stringify({ tipo: "sala_llena", mensaje: "Sala llena (máx. 4 jugadores)." }));
       ws.close();
@@ -152,15 +185,13 @@ export class WebSocketServidor {
     const indice = this.sala.size;
     const color  = COLORES_SIDEBAR[indice]!;
 
-    this.sala.set(ws.id, { indice, color, ws });
-    // No agregamos al nivel acá — cambiarNivel() es el responsable
-    // de agregar todos los jugadores conectados cuando se elige un nivel
+    this.sala.set(id, { indice, color, ws });
 
     console.log(`[+] Jugador ${indice + 1} conectado | Sala: ${this.sala.size}/${MAX_JUGADORES}`);
 
     ws.send(JSON.stringify({
       tipo:    "bienvenida",
-      id:      ws.id,
+      id,
       color,
       indice,
       mensaje: `Sos el Jugador ${indice + 1}`,
@@ -168,7 +199,7 @@ export class WebSocketServidor {
 
     this.broadcast({
       tipo:           "jugador_unido",
-      id:             ws.id,
+      id,
       color,
       indice,
       totalJugadores: this.sala.size,
@@ -176,15 +207,16 @@ export class WebSocketServidor {
   }
 
   private onMensaje(ws: any, mensaje: unknown): void {
-    // El display solo puede mandar elegir_nivel
-    if (this.displays.has(ws.id)) {
+    const id = this.idDe(ws);
+
+    if (this.displays.has(id)) {
       const data = this.parsearMensaje(mensaje);
       if (data?.tipo === "elegir_nivel") {
         this.cambiarNivel(Number(data.nivel));
       }
       return;
     }
-    if (!this.sala.has(ws.id))    return;
+    if (!this.sala.has(id)) return;
 
     const data = this.parsearMensaje(mensaje);
     if (!data) return;
@@ -193,36 +225,36 @@ export class WebSocketServidor {
 
     if (tipo === undefined || estado === undefined) return;
 
-    // Validación estricta
     if (!TIPOS_VALIDOS.has(tipo))     return;
     if (!ESTADOS_VALIDOS.has(estado)) return;
     if (tipo === "movimiento" && !DIRECCIONES_VALIDAS.has(direccion ?? "")) return;
 
-    this.nivel?.procesarInput(ws.id, tipo, estado, direccion);
+    this.nivel?.procesarInput(id, tipo, estado, direccion);
   }
 
   private onDesconexion(ws: any): void {
-    // Si era el display, solo limpiarlo
-    if (this.displays.has(ws.id)) {
-      this.displays.delete(ws.id);
-      this.conexiones.delete(ws.id);
+    const id = this.idDe(ws);
+
+    if (this.displays.has(id)) {
+      this.displays.delete(id);
+      this.conexiones.delete(id);
       console.log(`[DISPLAY] Host desconectado`);
       return;
     }
 
-    if (!this.sala.has(ws.id)) return;
+    if (!this.sala.has(id)) return;
 
-    const { indice } = this.sala.get(ws.id)!;
-    this.sala.delete(ws.id);
-    this.conexiones.delete(ws.id);
+    const { indice } = this.sala.get(id)!;
+    this.sala.delete(id);
+    this.conexiones.delete(id);
 
-    this.nivel?.eliminarJugador(ws.id);
+    this.nivel?.eliminarJugador(id);
 
     console.log(`[-] Jugador ${indice + 1} desconectado | Sala: ${this.sala.size}/${MAX_JUGADORES}`);
 
     this.broadcast({
       tipo:           "jugador_salio",
-      id:             ws.id,
+      id,
       totalJugadores: this.sala.size,
     });
   }

@@ -1,5 +1,5 @@
 import Matter from "matter-js";
-import { Jugador } from "./Jugador";
+import { Jugador } from "./Jugador.ts";
 
 const FUERZA_POR_JUGADOR = 0.005;
 

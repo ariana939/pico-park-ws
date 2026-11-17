@@ -115,13 +115,13 @@ const UI = (() => {
       const btn = document.getElementById('btn-iniciar');
       const msg = document.getElementById('espera-mensaje');
   
-      const habilitado = totalJugadores >= 3;
+      const habilitado = totalJugadores >= 1;
       btn.disabled = !habilitado;
   
       if (habilitado) {
         msg.innerHTML = `<strong style="color:var(--success)">¡Listos! Podés iniciar</strong>`;
       } else {
-        const faltan = 3 - totalJugadores;
+        const faltan = 1 - totalJugadores;
         msg.innerHTML = `Faltan <strong>${faltan} jugador${faltan !== 1 ? 'es' : ''}</strong> para comenzar`;
       }
     }

@@ -1,8 +1,8 @@
 import Matter from "matter-js";
-import { crearEngine, tickFisico, MS_POR_TICK, ALTO_MUNDO } from "../fisica/mundoFisico";
-import { Jugador, COLORES_JUGADORES } from "../entidades/Jugador";
-import { Llave } from "../entidades/Llave";
-import { Puerta } from "../entidades/Puerta";
+import { crearEngine, tickFisico, MS_POR_TICK, ALTO_MUNDO } from "../fisica/mundoFisico.ts";
+import { Jugador, COLORES_JUGADORES } from "../entidades/Jugador.ts";
+import { Llave } from "../entidades/Llave.ts";
+import { Puerta } from "../entidades/Puerta.ts";
 
 export type BroadcastFn = (datos: object) => void;
 

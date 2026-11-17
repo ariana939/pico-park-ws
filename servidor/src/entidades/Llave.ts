@@ -1,5 +1,5 @@
 import Matter from "matter-js";
-import { Jugador } from "./Jugador";
+import { Jugador } from "./Jugador.ts";
 
 export interface DatosLlave {
   x:          number;

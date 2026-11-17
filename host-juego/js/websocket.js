@@ -26,8 +26,10 @@ const WS = (() => {
   }
 
   function despachar(data) {
+    console.log('[WS] Mensaje recibido:', data);
     const handler = handlers[data.tipo];
     if (handler) handler(data);
+    else console.log('[WS] No hay handler registrado para el tipo:', data.tipo);
   }
 
   function on(tipo, callback) {

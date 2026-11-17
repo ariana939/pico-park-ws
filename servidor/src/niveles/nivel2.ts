@@ -1,8 +1,8 @@
-import { NivelBase, type BroadcastFn } from "./nivelBase";
-import { crearLimitesBase, ANCHO_MUNDO, ALTO_MUNDO } from "../fisica/mundoFisico";
-import { Caja } from "../entidades/Caja";
-import { Llave } from "../entidades/Llave";
-import { Puerta } from "../entidades/Puerta";
+import { NivelBase, type BroadcastFn } from "./nivelBase.ts";
+import { crearLimitesBase, ANCHO_MUNDO, ALTO_MUNDO } from "../fisica/mundoFisico.ts";
+import { Caja } from "../entidades/Caja.ts";
+import { Llave } from "../entidades/Llave.ts";
+import { Puerta } from "../entidades/Puerta.ts";
 import Matter from "matter-js";
 
 const SPAWN_X_BASE   = 80;
