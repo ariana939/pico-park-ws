@@ -1,6 +1,6 @@
-import { WebSocketServidor } from "../servidor/src/red/webSocketServidor";
-import { Nivel1 } from "../servidor/src/niveles/nivel1";
-import { Nivel2 } from "../servidor/src/niveles/nivel2";
+import { WebSocketServidor } from "./src/red/webSocketServidor.ts";
+import { Nivel1 } from "./src/niveles/nivel1.ts";
+import { Nivel2 } from "./src/niveles/nivel2.ts";
 
 const PUERTO = 3000;
 
